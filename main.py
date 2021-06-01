@@ -1,28 +1,26 @@
-'''
-+---------------------------------> x 
-|(0, 0)
-|              (W) UP
-|             (0, -1)
-|             +------+  (D) RIGHT
-|     (-1, 0) | HEAD |   (1, 0) 
-|    (A) LEFT +------+
-|              (0, 1)
-|             (S) DOWN
-|
-+ y                    
-'''
 from time import sleep
 from random import choice, randint
 class Snake():
     def __init__(self, init_body, init_direction, init_speed):
-        # body is a list [(x1, y1), (x2, y2), (x3, y3),...] body of snake
-        # direction is a tuple (x, y) where snake heads to 
+        '''
+        Parameters
+        ----------
+        body: list 
+            position of body snake [(x1, y1), (x2, y2), (x3, y3),...]
+        direction: tuple (x, y)
+            where snake heads to 
+        '''
         self.body = init_body
         self.default_snake_len = len(init_body)
         self.direction = init_direction
         self.speed = init_speed
     def take_step(self, position):
-        # position should be a point with (x, y)
+        '''
+        Parameters
+        ----------
+        position: tuple (x, y)
+            next point of head
+        '''
         self.body = self.body[1:] + [position]
     def take_direction(self, direction):
         self.direction = direction
@@ -42,6 +40,20 @@ class Apple():
         else:
             return self.random()
 class Game():
+    '''
+    A mathematics way to describe how to locate snake and directs
+    +---------------------------------> x 
+    |(0, 0)
+    |              (W) UP
+    |             (0, -1)
+    |             +------+  (D) RIGHT
+    |     (-1, 0) | HEAD |   (1, 0) 
+    |    (A) LEFT +------+
+    |              (0, 1)
+    |             (S) DOWN
+    |
+    + y                    
+    '''    
     def __init__(self, width, height, body, direction, speed=1):
         self.width = width
         self.height = height
@@ -86,8 +98,10 @@ class Game():
             print(''.join(row))
         print(border_top_bottom)
     
-    # when the snake'head ends up wall, it will appear in other side.
     def render_one_step(self):
+        '''
+        when the snake'head ends up wall, it will appear in other side.
+        '''
         x_step, y_step = self.snake.direction
         x, y = self.snake.head()
         x = (x + x_step) % self.width
@@ -100,8 +114,10 @@ class Game():
         self.snake.take_step(new_head)
         sleep(self.snake.speed)
 
-    # return three directions are not oppiste snake's head one
     def possible_directions(self):
+        '''
+        return three directions are not oppiste snake's head one
+        '''
         x, y = self.snake.direction
         opposite_direction = (0 - x, 0 - y)
         directions = list(self.directions_mapping.keys())
