@@ -76,7 +76,6 @@ class Game():
         return matrix
 
     def render(self):
-        # print(f'Board size width x height is {self.width} x {self.height}')
         print(f"Game on! Current snake'head directions is {self.directions_mapping.get(self.snake.direction)}")
         print(f"position of apple is {self.x_apple, self.y_apple}")
         matrix = self.board_matrix()
@@ -110,22 +109,30 @@ class Game():
         return directions
 
 def main():
-    # table_size = input(
-    #     '''
-    #     Pick table size
-    #     1) 8 x 8
-    #     2) 12 x 12
-    #     3) 15 x 15
-    #     '''
-    # )
-    # if table_size == 1:
-    #     width_x_height = (8, 8)
-    # elif table_size == 2:
-    #     width_x_height = (12, 12)
-    # else:
-    #     width_x_height = (15, 15)
-    width_x_height = (3, 3)
-    width, height = width_x_height
+    def pick_board_size():
+        while True:
+            board_size = input(
+                '''
+                Pick board size
+                1) 8 x 8
+                2) 12 x 12
+                3) 15 x 15
+                Want to quit, press Ctrl + C.
+                '''
+            )
+            if board_size in ('1', '2', '3'):
+                if board_size == '1':
+                    width_x_height = (8, 8)
+                elif board_size == '2':
+                    width_x_height = (12, 12)
+                elif board_size == '3':
+                    width_x_height = (15, 15)        
+                break
+            else:
+                continue
+        return width_x_height
+
+    width, height = pick_board_size()
     body = [(0, 0), (1, 0), (2, 0)]
     direction = (1, 0)
     speed = 0.2
