@@ -30,27 +30,38 @@ class Snake():
         return self.body[-1]
 
 class Apple():
-    def __init__(self, width, height):
+    def __init__(self, width, height, snake_body):
         self.width = width
         self.height = height
+        self.snake_body = snake_body
     def random(self):
         self.x = randint(0, self.width - 1)
         self.y = randint(0, self.height - 1)
-        return (self.x, self.y)
+        if (self.x, self.y) not in self.snake_body:
+            return (self.x, self.y)
+        else:
+            return self.random()
 class Game():
     def __init__(self, width, height, body, direction, speed=1):
         self.width = width
         self.height = height
         self.snake = Snake(body, direction, speed)
-        self.random_position = Apple(width, height).random()
+        self.random_position = Apple(self.width, self.height, self.snake.body).random()
         self.x_apple, self.y_apple = self.random_position
+        self.points = 0
         self.directions_mapping = {(1, 0): 'right', (0, 1): 'down', (-1, 0): 'left', (0, -1): 'up'}
 
     def snake_eats_apple(self):
         if (self.x_apple, self.y_apple) == self.snake.head():
             self.x_apple, self.y_apple = self.random_position
             self.snake.body.insert(0, self.snake.body[0])
+            self.points = len(self.snake.body) - self.snake.default_snake_len
 
+    def is_game_over(self):
+        if self.snake.head() in self.snake.body[:-1]:
+            return True
+        else:
+            return False
     def board_matrix(self):
         matrix = [[' ' for y in range(self.height)] for x in range(self.width)]
         
@@ -68,7 +79,6 @@ class Game():
         # print(f'Board size width x height is {self.width} x {self.height}')
         print(f"Game on! Current snake'head directions is {self.directions_mapping.get(self.snake.direction)}")
         print(f"position of apple is {self.x_apple, self.y_apple}")
-        print(f"points: {len(self.snake.body) - self.snake.default_snake_len}")
         matrix = self.board_matrix()
         border_top_bottom = ''.join(['+', '-' * self.width, '+'])
         print(border_top_bottom)
@@ -100,8 +110,23 @@ class Game():
         return directions
 
 def main():
-    width, height = (20, 20)
-    body = [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+    # table_size = input(
+    #     '''
+    #     Pick table size
+    #     1) 8 x 8
+    #     2) 12 x 12
+    #     3) 15 x 15
+    #     '''
+    # )
+    # if table_size == 1:
+    #     width_x_height = (8, 8)
+    # elif table_size == 2:
+    #     width_x_height = (12, 12)
+    # else:
+    #     width_x_height = (15, 15)
+    width_x_height = (3, 3)
+    width, height = width_x_height
+    body = [(0, 0), (1, 0), (2, 0)]
     direction = (1, 0)
     speed = 0.2
 
@@ -109,12 +134,20 @@ def main():
     
     try:
         while True:
-            for i in range(randint(1,20)):
-                game.render_continuos_steps()
-            direction = choice(game.possible_directions())
-            game.snake.take_direction(direction)
+            if not game.is_game_over():
+                for i in range(randint(1,20)):
+                    print(f'Points: {game.points}')
+                    if not game.is_game_over():
+                        game.render_continuos_steps()
+                    else:
+                        break
+                direction = choice(game.possible_directions())
+                game.snake.take_direction(direction)
+            else:
+                print('Game over!')
+                break
     except KeyboardInterrupt:
-        print('Game over!')
+        print('Game over!') 
 
         
 if __name__ == '__main__':
