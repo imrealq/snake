@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import os
+from snake_terminal import Snake as SnakeTerminal
 
 BOARD_SIZE = (400, 400)
 FPS = 60
@@ -12,6 +13,14 @@ PIXEL_WIDTH, PIXEL_HEIGHT = 15, 15
 SNAKE_BODY = pygame.transform.scale(GREEN_DOT_IMG, (PIXEL_WIDTH, PIXEL_HEIGHT))
 SNAKE_HEAD = pygame.transform.scale(BLACK_DOT_IMG, (PIXEL_WIDTH, PIXEL_HEIGHT))
 APPLE = pygame.transform.scale(RED_DOT_IMG, (PIXEL_WIDTH, PIXEL_HEIGHT))
+INIT_SNAKE_BODY = [(0,0), (1, 0), (2, 0), (3, 0)]
+INIT_SNAKE_DIRECTION = (1, 0)
+
+class Snake(SnakeTerminal):
+    def __init__(self, init_body, init_direction):
+        self.body = init_body
+        self.default_snake_len = len(init_body)
+        self.direction = init_direction
 
 class App():
     def __init__(self) -> None:
@@ -23,6 +32,7 @@ class App():
         self._display_surf = None
         self._size = self.width, self.height = BOARD_SIZE
         self._clock = pygame.time.Clock()
+        self.snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
 
     def on_init(self):
         '''
@@ -40,11 +50,16 @@ class App():
     def on_loop(self):
         pass
 
-    def on_render(self, pos):
+    def on_render(self, corner):
         self._display_surf.fill(WHITE)
-        self._display_surf.blit(SNAKE_BODY, (pos.x, pos.y))
-        self._display_surf.blit(SNAKE_HEAD, (pos.x + PIXEL_WIDTH, pos.y))
-        self._display_surf.blit(APPLE, (pos.x + 200, pos.y + 200))
+
+        for body_coordinates in self.snake.body[:-1]:
+            x, y = body_coordinates
+            self._display_surf.blit(SNAKE_BODY, (corner.x + x * PIXEL_WIDTH, corner.y + y * PIXEL_HEIGHT))
+        x, y = self.snake.head()
+        self._display_surf.blit(SNAKE_HEAD, (corner.x + x * PIXEL_WIDTH, corner.y + y * PIXEL_HEIGHT))
+        
+        self._display_surf.blit(APPLE, (corner.x + 200, corner.y + 200))
 
         pygame.display.update()
         
@@ -52,7 +67,7 @@ class App():
         pygame.quit()
 
     def on_execute(self):
-        pos = pygame.Rect(0, 0, PIXEL_WIDTH, PIXEL_HEIGHT)
+        corner = pygame.Rect(0, 0, PIXEL_WIDTH, PIXEL_HEIGHT)
         if self.on_init() == False:
             self._running = False
         while self._running:
@@ -60,7 +75,7 @@ class App():
             for event in pygame.event.get():
                 self.on_event(event)
             self.on_loop()
-            self.on_render(pos)
+            self.on_render(corner)
         self.on_cleanup()
 
 if __name__ == '__main__':
