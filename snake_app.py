@@ -1,7 +1,9 @@
 import pygame
 from pygame.locals import *
 from time import sleep
+from random import choice, randint
 from snake_terminal import Snake as SnakeTerminal
+from snake_terminal import Apple
 from setting import *
 
 class Snake(SnakeTerminal):
@@ -20,8 +22,13 @@ class App():
         self._display_surf = None
         self._size = self.width, self.height = BOARD_SIZE
         self._clock = pygame.time.Clock()
-        self.snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
-
+        self._point = 0
+        self._game_over = False
+        self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
+        self._random_apple = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
+        self._apple_coordinates = self._random_apple
+        # self._apple_coordinates = (6, 0)
+        
     def on_init(self):
         '''
             Start app by pygame init
@@ -40,23 +47,33 @@ class App():
             '''
             when the snake'head ends up wall, it will appear in other side.
             '''
-            x_step, y_step = self.snake.direction
-            x, y = self.snake.head()
+            x_step, y_step = self._snake.direction
+            x, y = self._snake.head()
             x = (x + x_step) % MAX_X_AXIS
             y = (y + y_step) % MAX_Y_AXIS
             return (x, y)
-        self.snake.take_step(next_coordinates())
+        if self._snake.head() in self._snake.body[:-1]:
+            ''' the snake's head hits body '''
+            self._game_over = True
+        else:
+            '''if game is not over, did the snake eat apple? and make a move'''
+            if self._apple_coordinates == self._snake.head():
+                self._apple_coordinates = self._random_apple
+                self._snake.body.insert(0, self._snake.body[0])
+                self._point += 1
+                # print(self._point)
+            self._snake.take_step(next_coordinates())
 
     def on_render(self, corner):
         self._display_surf.fill(WHITE)
 
-        for body_coordinates in self.snake.body[:-1]:
+        for body_coordinates in self._snake.body[:-1]:
             x, y = body_coordinates
             self._display_surf.blit(SNAKE_BODY, (corner.x + x * PIXEL_WIDTH, corner.y + y * PIXEL_HEIGHT))
-        x, y = self.snake.head()
+        x, y = self._snake.head()
         self._display_surf.blit(SNAKE_HEAD, (corner.x + x * PIXEL_WIDTH, corner.y + y * PIXEL_HEIGHT))
-        
-        self._display_surf.blit(APPLE, (corner.x + 200, corner.y + 200))
+        x, y = self._apple_coordinates
+        self._display_surf.blit(APPLE, (corner.x + x * PIXEL_WIDTH, corner.y + y * PIXEL_HEIGHT))
 
         pygame.display.update()
         
@@ -69,11 +86,17 @@ class App():
             self._running = False
         while self._running:
             self._clock.tick(FPS)
+            while not self._game_over and self._running:
+                for event in pygame.event.get():
+                    self.on_event(event)
+                self.on_loop()
+                self.on_render(corner)
+                sleep(0.1)
+            
             for event in pygame.event.get():
                 self.on_event(event)
-            self.on_loop()
             self.on_render(corner)
-            sleep(0.5)
+
         self.on_cleanup()
 
 if __name__ == '__main__':
