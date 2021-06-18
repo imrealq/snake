@@ -25,11 +25,6 @@ class App():
         self._display_surf = None
         self._size = self.width, self.height = BOARD_SIZE
         self._clock = pygame.time.Clock()
-        self._point = 0
-        self._game_over = False
-        self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
-        self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
-        # self._apple_coordinates = (6, 0)
         
     def on_init(self):
         '''
@@ -39,6 +34,10 @@ class App():
         pygame.init()
         self._running = True
         self._display_surf = pygame.display.set_mode(BOARD_SIZE)
+        self._point = 0
+        self._game_over = False
+        self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
+        self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
 
     def on_event(self, event):
         if event.type == QUIT:
@@ -54,9 +53,7 @@ class App():
                 elif (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and not self._snake.backward_direction(HEAD_RIGHT):
                     self._snake.take_direction(HEAD_RIGHT)
             else:
-                self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
-                self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
-                self._game_over = False
+                self.on_init()
 
     def on_loop(self):
         def next_coordinates():
