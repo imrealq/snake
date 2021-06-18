@@ -15,3 +15,7 @@ SNAKE_HEAD = pygame.transform.scale(BLACK_DOT_IMG, (PIXEL_WIDTH, PIXEL_HEIGHT))
 APPLE = pygame.transform.scale(RED_DOT_IMG, (PIXEL_WIDTH, PIXEL_HEIGHT))
 INIT_SNAKE_BODY = [(0,0), (1, 0), (2, 0), (3, 0)]
 INIT_SNAKE_DIRECTION = (1, 0)
+HEAD_UP = (0, -1)
+HEAD_DOWN = (0, 1)
+HEAD_RIGHT = (1, 0)
+HEAD_LEFT = (-1, 0)

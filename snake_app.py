@@ -11,6 +11,9 @@ class Snake(SnakeTerminal):
         self.body = init_body
         self.default_snake_len = len(init_body)
         self.direction = init_direction
+    def backward_direction(self, backward_direction):
+        x, y = self.direction
+        return True if backward_direction == (0 - x, 0 - y) else False
 
 class App():
     def __init__(self) -> None:
@@ -25,8 +28,7 @@ class App():
         self._point = 0
         self._game_over = False
         self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
-        self._random_apple = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
-        self._apple_coordinates = self._random_apple
+        self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
         # self._apple_coordinates = (6, 0)
         
     def on_init(self):
@@ -41,6 +43,20 @@ class App():
     def on_event(self, event):
         if event.type == QUIT:
             self._running = False
+        if event.type == pygame.KEYDOWN:
+            if not self._game_over:
+                if (event.key == pygame.K_w or event.key == pygame.K_UP) and not self._snake.backward_direction(HEAD_UP):
+                    self._snake.take_direction(HEAD_UP)
+                elif (event.key == pygame.K_s or event.key == pygame.K_DOWN) and not self._snake.backward_direction(HEAD_DOWN):
+                    self._snake.take_direction(HEAD_DOWN)
+                elif (event.key == pygame.K_a or event.key == pygame.K_LEFT) and not self._snake.backward_direction(HEAD_LEFT):
+                    self._snake.take_direction(HEAD_LEFT)
+                elif (event.key == pygame.K_d or event.key == pygame.K_RIGHT) and not self._snake.backward_direction(HEAD_RIGHT):
+                    self._snake.take_direction(HEAD_RIGHT)
+            else:
+                self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
+                self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
+                self._game_over = False
 
     def on_loop(self):
         def next_coordinates():
@@ -58,10 +74,10 @@ class App():
         else:
             '''if game is not over, did the snake eat apple? and make a move'''
             if self._apple_coordinates == self._snake.head():
-                self._apple_coordinates = self._random_apple
+                self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
                 self._snake.body.insert(0, self._snake.body[0])
                 self._point += 1
-                # print(self._point)
+                print(self._point)
             self._snake.take_step(next_coordinates())
 
     def on_render(self, corner):
@@ -92,7 +108,6 @@ class App():
                 self.on_loop()
                 self.on_render(corner)
                 sleep(0.1)
-            
             for event in pygame.event.get():
                 self.on_event(event)
             self.on_render(corner)
