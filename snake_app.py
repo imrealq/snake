@@ -1,20 +1,8 @@
 import pygame
 from pygame.locals import *
-import os
+from time import sleep
 from snake_terminal import Snake as SnakeTerminal
-
-BOARD_SIZE = (400, 400)
-FPS = 60
-WHITE = (255, 255, 255)
-GREEN_DOT_IMG = pygame.image.load(os.path.join('assets', 'green_dot.png'))
-RED_DOT_IMG = pygame.image.load(os.path.join('assets', 'red_dot.png'))
-BLACK_DOT_IMG = pygame.image.load(os.path.join('assets', 'blue_dot.png'))
-PIXEL_WIDTH, PIXEL_HEIGHT = 15, 15
-SNAKE_BODY = pygame.transform.scale(GREEN_DOT_IMG, (PIXEL_WIDTH, PIXEL_HEIGHT))
-SNAKE_HEAD = pygame.transform.scale(BLACK_DOT_IMG, (PIXEL_WIDTH, PIXEL_HEIGHT))
-APPLE = pygame.transform.scale(RED_DOT_IMG, (PIXEL_WIDTH, PIXEL_HEIGHT))
-INIT_SNAKE_BODY = [(0,0), (1, 0), (2, 0), (3, 0)]
-INIT_SNAKE_DIRECTION = (1, 0)
+from setting import *
 
 class Snake(SnakeTerminal):
     def __init__(self, init_body, init_direction):
@@ -48,7 +36,16 @@ class App():
             self._running = False
 
     def on_loop(self):
-        pass
+        def next_coordinates():
+            '''
+            when the snake'head ends up wall, it will appear in other side.
+            '''
+            x_step, y_step = self.snake.direction
+            x, y = self.snake.head()
+            x = (x + x_step) % MAX_X_AXIS
+            y = (y + y_step) % MAX_Y_AXIS
+            return (x, y)
+        self.snake.take_step(next_coordinates())
 
     def on_render(self, corner):
         self._display_surf.fill(WHITE)
@@ -76,6 +73,7 @@ class App():
                 self.on_event(event)
             self.on_loop()
             self.on_render(corner)
+            sleep(0.5)
         self.on_cleanup()
 
 if __name__ == '__main__':
