@@ -23,7 +23,6 @@ class App():
         '''
         self._running = True
         self._display_surf = None
-        self._size = self.width, self.height = BOARD_SIZE
         self._clock = pygame.time.Clock()
         
     def on_init(self):
@@ -33,7 +32,7 @@ class App():
         '''
         pygame.init()
         self._running = True
-        self._display_surf = pygame.display.set_mode(BOARD_SIZE)
+        self._display_surf = pygame.display.set_mode(WINDOW_SIZE)
         self._point = 0
         self._game_over = False
         self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
@@ -77,16 +76,16 @@ class App():
                 print(self._point)
             self._snake.take_step(next_coordinates())
 
-    def on_render(self, corner):
-        self._display_surf.fill(WHITE)
-
+    def on_render(self):
+        
+        self._display_surf.fill(BLACK)
+        pygame.draw.rect(self._display_surf, WHITE, BOARD)
+        
+        coordinates_to_pixel = lambda coordinates : (CORNER.x + coordinates[0] * PIXEL_WIDTH, CORNER.y + coordinates[1] * PIXEL_HEIGHT)
         for body_coordinates in self._snake.body[:-1]:
-            x, y = body_coordinates
-            self._display_surf.blit(SNAKE_BODY, (corner.x + x * PIXEL_WIDTH, corner.y + y * PIXEL_HEIGHT))
-        x, y = self._snake.head()
-        self._display_surf.blit(SNAKE_HEAD, (corner.x + x * PIXEL_WIDTH, corner.y + y * PIXEL_HEIGHT))
-        x, y = self._apple_coordinates
-        self._display_surf.blit(APPLE, (corner.x + x * PIXEL_WIDTH, corner.y + y * PIXEL_HEIGHT))
+            self._display_surf.blit(SNAKE_BODY, coordinates_to_pixel(body_coordinates))
+        self._display_surf.blit(SNAKE_HEAD, coordinates_to_pixel(self._snake.head()))
+        self._display_surf.blit(APPLE, coordinates_to_pixel(self._apple_coordinates))
 
         pygame.display.update()
         
@@ -94,7 +93,6 @@ class App():
         pygame.quit()
 
     def on_execute(self):
-        corner = pygame.Rect(0, 0, PIXEL_WIDTH, PIXEL_HEIGHT)
         if self.on_init() == False:
             self._running = False
         while self._running:
@@ -103,11 +101,11 @@ class App():
                 for event in pygame.event.get():
                     self.on_event(event)
                 self.on_loop()
-                self.on_render(corner)
+                self.on_render()
                 sleep(0.1)
             for event in pygame.event.get():
                 self.on_event(event)
-            self.on_render(corner)
+            self.on_render()
 
         self.on_cleanup()
 
