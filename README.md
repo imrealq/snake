@@ -16,3 +16,4 @@ The pet project was inspried by this [article](https://robertheaton.com/2018/12/
     pip install -r requirements.txt
     python3 snake_app.py
     ```
+
