@@ -1,12 +1,8 @@
-import pygame
-from pygame.locals import *
 from time import sleep
-from random import choice, randint
-from snake_terminal import Snake as SnakeTerminal
-from snake_terminal import Apple
 from setting import *
+from snake_terminal import Snake, Apple
 
-class Snake(SnakeTerminal):
+class Snake(Snake):
     def __init__(self, init_body, init_direction):
         self.body = init_body
         self.default_snake_len = len(init_body)
@@ -36,7 +32,7 @@ class App():
         self._point = 0
         self._game_over = False
         self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
-        self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
+        self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, self._snake.body).random()
 
     def on_event(self, event):
         if event.type == QUIT:
@@ -70,16 +66,16 @@ class App():
         else:
             '''if game is not over, did the snake eat apple? and make a move'''
             if self._apple_coordinates == self._snake.head():
-                self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, INIT_SNAKE_BODY).random()
+                self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, self._snake.body).random()
                 self._snake.body.insert(0, self._snake.body[0])
                 self._point += 1
-                print(self._point)
             self._snake.take_step(next_coordinates())
 
     def on_render(self):
         
         self._display_surf.fill(BLACK)
         pygame.draw.rect(self._display_surf, WHITE, BOARD)
+        self._display_surf.blit(SCORE_FONT.render('SCORE: ' + str(self._point), 1, GREEN), (0, 0))
         
         coordinates_to_pixel = lambda coordinates : (CORNER.x + coordinates[0] * PIXEL_WIDTH, CORNER.y + coordinates[1] * PIXEL_HEIGHT)
         for body_coordinates in self._snake.body[:-1]:
