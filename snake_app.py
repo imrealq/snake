@@ -1,4 +1,5 @@
 from time import sleep
+from pygame import time
 from setting import *
 from snake_terminal import Snake, Apple
 
@@ -31,6 +32,7 @@ class App():
         self._display_surf = pygame.display.set_mode(WINDOW_SIZE)
         self._point = 0
         self._game_over = False
+        self._game_start = False
         self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
         self._apple_coordinates = Apple(MAX_X_AXIS, MAX_Y_AXIS, self._snake.body).random()
 
@@ -38,6 +40,7 @@ class App():
         if event.type == QUIT:
             self._running = False
         if event.type == pygame.KEYDOWN:
+            self._game_start = True
             if not self._game_over:
                 if (event.key == pygame.K_w or event.key == pygame.K_UP) and not self._snake.backward_direction(HEAD_UP):
                     self._snake.take_direction(HEAD_UP)
@@ -72,17 +75,29 @@ class App():
             self._snake.take_step(next_coordinates())
 
     def on_render(self):
+        coordinates_to_pixel = lambda coordinates : (CORNER.x + coordinates[0] * PIXEL_WIDTH, CORNER.y + coordinates[1] * PIXEL_HEIGHT)
+        def snake_and_apple():
+            for body_coordinates in self._snake.body[:-1]:
+                self._display_surf.blit(SNAKE_BODY, coordinates_to_pixel(body_coordinates))
+            self._display_surf.blit(SNAKE_HEAD, coordinates_to_pixel(self._snake.head()))
+            self._display_surf.blit(APPLE, coordinates_to_pixel(self._apple_coordinates))
         
+        def popup_game_over():
+            pygame.draw.rect(self._display_surf, RED, POP_UP)
+            self._display_surf.blit(GAME_OVER_FONT.render(' GAME OVER! ', 1, WHITE), (BOARD.centerx // 2, BOARD.centery // 2))
+            self._display_surf.blit(FONT.render('      Score: ' + str(self._point), 1, WHITE), (BOARD.centerx // 2, BOARD.centery // 2 + 50))
+        
+        def menu():
+            pygame.draw.rect(self._display_surf, GREEN, POP_UP)
+            self._display_surf.blit(MENU_FONT.render('  NEW GAME  ', 1, WHITE), (BOARD.centerx // 2, BOARD.centery // 2 + 10))
+            self._display_surf.blit(FONT.render('  Press any keys ', 1, WHITE), (BOARD.centerx // 2 , BOARD.centery // 2 + 50))
+
         self._display_surf.fill(BLACK)
         pygame.draw.rect(self._display_surf, WHITE, BOARD)
-        self._display_surf.blit(SCORE_FONT.render('SCORE: ' + str(self._point), 1, GREEN), (0, 0))
+        self._display_surf.blit(FONT.render('SCORE: ' + str(self._point), 1, GREEN), (0, 0))
         
-        coordinates_to_pixel = lambda coordinates : (CORNER.x + coordinates[0] * PIXEL_WIDTH, CORNER.y + coordinates[1] * PIXEL_HEIGHT)
-        for body_coordinates in self._snake.body[:-1]:
-            self._display_surf.blit(SNAKE_BODY, coordinates_to_pixel(body_coordinates))
-        self._display_surf.blit(SNAKE_HEAD, coordinates_to_pixel(self._snake.head()))
-        self._display_surf.blit(APPLE, coordinates_to_pixel(self._apple_coordinates))
-
+        (popup_game_over() if self._game_over else snake_and_apple()) if self._game_start else menu()
+            
         pygame.display.update()
         
     def on_cleanup(self):
@@ -93,16 +108,17 @@ class App():
             self._running = False
         while self._running:
             self._clock.tick(FPS)
-            while not self._game_over and self._running:
-                for event in pygame.event.get():
-                    self.on_event(event)
-                self.on_loop()
-                self.on_render()
-                sleep(0.1)
+            self.on_render() # render menu
+            if self._game_start:
+                while not self._game_over and self._running:
+                    for event in pygame.event.get():
+                        self.on_event(event)
+                    self.on_loop()
+                    self.on_render() # snake_and_apple
+                    sleep(0.1)
+                self.on_render() # popup_game_over
             for event in pygame.event.get():
                 self.on_event(event)
-            self.on_render()
-
         self.on_cleanup()
 
 if __name__ == '__main__':
