@@ -21,6 +21,7 @@ MAX_X_AXIS, MAX_Y_AXIS = (
 BOARD = pygame.Rect(RIGHT, TOP, BOARD_SIZE_WIDTH, BOARD_SIZE_HEIGHT)
 CORNER = pygame.Rect(RIGHT, TOP, PIXEL_WIDTH, PIXEL_HEIGHT)
 POP_UP = pygame.Rect(BOARD.centerx // 2, BOARD.centery // 2, BOARD_SIZE_WIDTH // 2, 100)
+INPUT_FIELD_NAME = pygame.Rect(BOARD.centerx // 2, BOARD.centery // 2, BOARD_SIZE_WIDTH // 2, 80)
 
 # RGB color
 WHITE = (255, 255, 255)
@@ -32,9 +33,11 @@ RED = (255, 0, 0)
 GREEN_DOT_IMG = pygame.image.load(os.path.join("assets", "green_dot.png"))
 RED_DOT_IMG = pygame.image.load(os.path.join("assets", "red_dot.png"))
 BLACK_DOT_IMG = pygame.image.load(os.path.join("assets", "blue_dot.png"))
-FONT = pygame.font.Font(os.path.join("fonts", "DejaVuSans.ttf"), 24)
+FONT_SIZE = 20
+FONT = pygame.font.Font(os.path.join("fonts", "DejaVuSans.ttf"), FONT_SIZE)
+MENU_FONT_SIZE = 26
 MENU_FONT = GAME_OVER_FONT = pygame.font.Font(
-    os.path.join("fonts", "DejaVuSans.ttf"), 30
+    os.path.join("fonts", "DejaVuSans.ttf"), MENU_FONT_SIZE
 )
 
 # init snake infor
