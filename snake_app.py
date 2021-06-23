@@ -75,18 +75,21 @@ class App:
             y = (y + y_step) % MAX_Y_AXIS
             return (x, y)
 
-        if self._snake.head() in self._snake.body[:-1]:
-            """ the snake's head hits body """
-            self._screen = "game over"
-        else:
-            """if game is not over, did the snake eat apple? and make a move"""
-            if self._apple_coordinates == self._snake.head():
-                self._apple_coordinates = Apple(
-                    MAX_X_AXIS, MAX_Y_AXIS, self._snake.body
-                ).random()
-                self._snake.body.insert(0, self._snake.body[0])
-                self._point += 1
-            self._snake.take_step(next_coordinates())
+        if self._screen == "playing":
+            if self._snake.head() in self._snake.body[:-1]:
+                """ the snake's head hits body """
+                player_id = sql.get_player_id(self._player)
+                sql.insert_game_score(self._point, player_id)
+                self._screen = "game over"
+            else:
+                """if game is not over, did the snake eat apple? and make a move"""
+                if self._apple_coordinates == self._snake.head():
+                    self._apple_coordinates = Apple(
+                        MAX_X_AXIS, MAX_Y_AXIS, self._snake.body
+                    ).random()
+                    self._snake.body.insert(0, self._snake.body[0])
+                    self._point += 1
+                self._snake.take_step(next_coordinates())
 
     def on_render(self):
         self._display_surf.fill(BLACK)
@@ -165,8 +168,8 @@ class App:
             self._running = False
         while self._running:
             self._clock.tick(FPS)
-            self.on_loop()
             self.on_render()
+            self.on_loop()
             for event in pygame.event.get():
                 self.on_event(event)
         self.on_cleanup()
@@ -177,4 +180,3 @@ if __name__ == "__main__":
     theApp = App()
     theApp.on_execute()
     print("Game over!")
-    # TODO: save result after each play
