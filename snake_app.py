@@ -10,10 +10,6 @@ class Snake(Snake):
         self.default_snake_len = len(init_body)
         self.direction = init_direction
 
-    def backward_direction(self, backward_direction):
-        x, y = self.direction
-        return True if backward_direction == (0 - x, 0 - y) else False
-
 
 class App:
     def __init__(self) -> None:
@@ -56,21 +52,13 @@ class App:
                     self._player = self._player[:12]
                     self._screen = "playing"
             elif self._screen == "playing":
-                if (
-                    event.key == pygame.K_w or event.key == pygame.K_UP
-                ) and not self._snake.backward_direction(HEAD_UP):
+                if self._snake.direction != HEAD_DOWN and event.key in MOVE_UP:
                     self._snake.take_direction(HEAD_UP)
-                elif (
-                    event.key == pygame.K_s or event.key == pygame.K_DOWN
-                ) and not self._snake.backward_direction(HEAD_DOWN):
+                elif self._snake.direction != HEAD_UP and event.key in MOVE_DOWN:
                     self._snake.take_direction(HEAD_DOWN)
-                elif (
-                    event.key == pygame.K_a or event.key == pygame.K_LEFT
-                ) and not self._snake.backward_direction(HEAD_LEFT):
+                elif self._snake.direction != HEAD_RIGHT and event.key in MOVE_LEFT:
                     self._snake.take_direction(HEAD_LEFT)
-                elif (
-                    event.key == pygame.K_d or event.key == pygame.K_RIGHT
-                ) and not self._snake.backward_direction(HEAD_RIGHT):
+                elif self._snake.direction != HEAD_LEFT and event.key in MOVE_RIGHT:
                     self._snake.take_direction(HEAD_RIGHT)
             elif self._screen == "game over":
                 self.on_init()
@@ -100,21 +88,18 @@ class App:
             self._snake.take_step(next_coordinates())
 
     def on_render(self):
-        coordinates_to_pixel = lambda coordinates: (
-            CORNER.x + coordinates[0] * PIXEL_WIDTH,
-            CORNER.y + coordinates[1] * PIXEL_HEIGHT,
-        )
-
         self._display_surf.fill(BLACK)
-        pygame.draw.rect(self._display_surf, WHITE, BOARD)
-        self._display_surf.blit(
-            FONT.render("POINTS: " + str(self._point), 1, GREEN), (RIGHT, TOP // 6)
+        board = pygame.draw.rect(self._display_surf, WHITE, BOARD)
+        information = " ".join(
+            ["POINTS:", str(self._point), "   ", "PLAYER:", self._player]
         )
-        self._display_surf.blit(
-            FONT.render("PLAYER: " + self._player, 1, GREEN), (150, TOP // 6)
-        )
+        self._display_surf.blit(FONT.render(information, 1, GREEN), (RIGHT, 3))
 
         def snake_and_apple():
+            coordinates_to_pixel = lambda coordinates: (
+                CORNER.x + coordinates[0] * PIXEL_WIDTH,
+                CORNER.y + coordinates[1] * PIXEL_HEIGHT,
+            )
             for body_coordinates in self._snake.body[:-1]:
                 self._display_surf.blit(
                     SNAKE_BODY, coordinates_to_pixel(body_coordinates)
@@ -189,5 +174,5 @@ class App:
 if __name__ == "__main__":
     theApp = App()
     theApp.on_execute()
-    print(theApp._player, theApp._point)
+    # print(theApp._player, theApp._point)
     print("Game over!")
