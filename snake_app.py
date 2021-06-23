@@ -2,6 +2,7 @@ from time import sleep
 from pygame import time
 from setting import *
 from snake_terminal import Snake, Apple
+import sql
 
 
 class Snake(Snake):
@@ -172,7 +173,8 @@ class App:
 
 
 if __name__ == "__main__":
+    sql.init_db()
     theApp = App()
     theApp.on_execute()
-    # print(theApp._player, theApp._point)
     print("Game over!")
+    # TODO: save result after each play
