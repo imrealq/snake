@@ -1,6 +1,7 @@
 import os
 import pygame
 from pygame.locals import *
+import string
 
 pygame.font.init()
 
@@ -21,7 +22,9 @@ MAX_X_AXIS, MAX_Y_AXIS = (
 BOARD = pygame.Rect(RIGHT, TOP, BOARD_SIZE_WIDTH, BOARD_SIZE_HEIGHT)
 CORNER = pygame.Rect(RIGHT, TOP, PIXEL_WIDTH, PIXEL_HEIGHT)
 POP_UP = pygame.Rect(BOARD.centerx // 2, BOARD.centery // 2, BOARD_SIZE_WIDTH // 2, 100)
-INPUT_FIELD_NAME = pygame.Rect(BOARD.centerx // 2, BOARD.centery // 2, BOARD_SIZE_WIDTH // 2, 80)
+INPUT_FIELD_NAME = pygame.Rect(
+    BOARD.centerx // 2, BOARD.centery // 2, BOARD_SIZE_WIDTH // 2, 80
+)
 
 # RGB color
 WHITE = (255, 255, 255)
@@ -52,3 +55,9 @@ HEAD_UP = (0, -1)
 HEAD_DOWN = (0, 1)
 HEAD_RIGHT = (1, 0)
 HEAD_LEFT = (-1, 0)
+
+# allow key input
+LIST_ALLOW_INPUT_KEY = [
+    pygame.key.key_code(char)
+    for char in "".join([string.ascii_lowercase, string.digits, "+", "-", "_"])
+]
