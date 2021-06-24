@@ -63,7 +63,7 @@ LIST_ALLOW_INPUT_KEY = [
 ]
 
 # control snake head
-MOVE_UP = (pygame.key.key_code("w"), pygame.key.key_code("up"))
-MOVE_DOWN = (pygame.key.key_code("s"), pygame.key.key_code("down"))
-MOVE_LEFT = (pygame.key.key_code("a"), pygame.key.key_code("left"))
-MOVE_RIGHT = (pygame.key.key_code("d"), pygame.key.key_code("right"))
+MOVE_UP = pygame.key.key_code("w"), pygame.key.key_code("up")
+MOVE_DOWN = pygame.key.key_code("s"), pygame.key.key_code("down")
+MOVE_LEFT = pygame.key.key_code("a"), pygame.key.key_code("left")
+MOVE_RIGHT = pygame.key.key_code("d"), pygame.key.key_code("right")

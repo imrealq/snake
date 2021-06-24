@@ -53,13 +53,13 @@ class App:
                     self._player = self._player[:12]
                     self._screen = "playing"
             elif self._screen == "playing":
-                if self._snake.direction != HEAD_DOWN and event.key in MOVE_UP:
+                if event.key in MOVE_UP and self._snake.direction != HEAD_DOWN:
                     self._snake.take_direction(HEAD_UP)
-                elif self._snake.direction != HEAD_UP and event.key in MOVE_DOWN:
+                elif event.key in MOVE_DOWN and self._snake.direction != HEAD_UP:
                     self._snake.take_direction(HEAD_DOWN)
-                elif self._snake.direction != HEAD_RIGHT and event.key in MOVE_LEFT:
+                elif event.key in MOVE_LEFT and self._snake.direction != HEAD_RIGHT:
                     self._snake.take_direction(HEAD_LEFT)
-                elif self._snake.direction != HEAD_LEFT and event.key in MOVE_RIGHT:
+                elif event.key in MOVE_RIGHT and self._snake.direction != HEAD_LEFT:
                     self._snake.take_direction(HEAD_RIGHT)
             elif self._screen == "game over":
                 self.on_init()
@@ -123,7 +123,7 @@ class App:
             )
             self._display_surf.blit(
                 GAME_OVER_FONT.render("Points: " + str(self._point), 1, WHITE),
-                (pop_up.x + 45, pop_up.x + 65),
+                (pop_up.x + 40, pop_up.x + 65),
             )
 
         def menu():
@@ -153,7 +153,7 @@ class App:
             input_player_name()
         elif self._screen == "playing":
             snake_and_apple()
-            sleep(0.1)
+            sleep(0.075)
         elif self._screen == "game over":
             popup_game_over()
             sleep(0.75)
