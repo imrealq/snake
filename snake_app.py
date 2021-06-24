@@ -61,6 +61,8 @@ class App:
                     self._snake.take_direction(HEAD_LEFT)
                 elif event.key in MOVE_RIGHT and self._snake.direction != HEAD_LEFT:
                     self._snake.take_direction(HEAD_RIGHT)
+                elif event.key == pygame.K_ESCAPE:
+                    self._screen = "game over"
             elif self._screen == "game over":
                 self.on_init()
 
