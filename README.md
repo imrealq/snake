@@ -10,10 +10,16 @@ The pet project was inspried by this [article](https://robertheaton.com/2018/12/
 * choose random apple with recursion
 
 ### How to
-    ```
-    python3 -m venv .venv
-    . .venv/bin/activate
-    pip install -r requirements.txt
-    python3 snake_app.py
-    ```
+Ensure sqlite was installed
+```
+sudo apt update
+sudo apt install sqlite3
+```
+Then 
+```
+python3 -m venv .venv
+. .venv/bin/activate
+pip install -r requirements.txt
+python3 snake_app.py
+```
 

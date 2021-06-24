@@ -2,6 +2,7 @@ from time import sleep
 from pygame import time
 from setting import *
 from snake_terminal import Snake, Apple
+import sql
 
 
 class Snake(Snake):
@@ -9,10 +10,6 @@ class Snake(Snake):
         self.body = init_body
         self.default_snake_len = len(init_body)
         self.direction = init_direction
-
-    def backward_direction(self, backward_direction):
-        x, y = self.direction
-        return True if backward_direction == (0 - x, 0 - y) else False
 
 
 class App:
@@ -34,8 +31,8 @@ class App:
         self._running = True
         self._display_surf = pygame.display.set_mode(WINDOW_SIZE)
         self._point = 0
-        self._game_over = False
-        self._game_start = False
+        self._screen = "intro"
+        self._player = ""
         self._snake = Snake(INIT_SNAKE_BODY, INIT_SNAKE_DIRECTION)
         self._apple_coordinates = Apple(
             MAX_X_AXIS, MAX_Y_AXIS, self._snake.body
@@ -45,25 +42,28 @@ class App:
         if event.type == QUIT:
             self._running = False
         if event.type == pygame.KEYDOWN:
-            self._game_start = True
-            if not self._game_over:
-                if (
-                    event.key == pygame.K_w or event.key == pygame.K_UP
-                ) and not self._snake.backward_direction(HEAD_UP):
+            if self._screen == "intro":
+                self._screen = "input name"
+            elif self._screen == "input name":
+                if event.key == pygame.K_BACKSPACE:
+                    self._player = self._player[:-1]
+                elif event.key in LIST_ALLOW_INPUT_KEY and len(self._player) < 12:
+                    self._player += event.unicode
+                elif event.key == pygame.K_RETURN and self._player:
+                    self._player = self._player[:12]
+                    self._screen = "playing"
+            elif self._screen == "playing":
+                if event.key in MOVE_UP and self._snake.direction != HEAD_DOWN:
                     self._snake.take_direction(HEAD_UP)
-                elif (
-                    event.key == pygame.K_s or event.key == pygame.K_DOWN
-                ) and not self._snake.backward_direction(HEAD_DOWN):
+                elif event.key in MOVE_DOWN and self._snake.direction != HEAD_UP:
                     self._snake.take_direction(HEAD_DOWN)
-                elif (
-                    event.key == pygame.K_a or event.key == pygame.K_LEFT
-                ) and not self._snake.backward_direction(HEAD_LEFT):
+                elif event.key in MOVE_LEFT and self._snake.direction != HEAD_RIGHT:
                     self._snake.take_direction(HEAD_LEFT)
-                elif (
-                    event.key == pygame.K_d or event.key == pygame.K_RIGHT
-                ) and not self._snake.backward_direction(HEAD_RIGHT):
+                elif event.key in MOVE_RIGHT and self._snake.direction != HEAD_LEFT:
                     self._snake.take_direction(HEAD_RIGHT)
-            else:
+                elif event.key == pygame.K_ESCAPE:
+                    self._screen = "game over"
+            elif self._screen == "game over":
                 self.on_init()
 
     def on_loop(self):
@@ -77,26 +77,35 @@ class App:
             y = (y + y_step) % MAX_Y_AXIS
             return (x, y)
 
-        if self._snake.head() in self._snake.body[:-1]:
-            """ the snake's head hits body """
-            self._game_over = True
-        else:
-            """if game is not over, did the snake eat apple? and make a move"""
-            if self._apple_coordinates == self._snake.head():
-                self._apple_coordinates = Apple(
-                    MAX_X_AXIS, MAX_Y_AXIS, self._snake.body
-                ).random()
-                self._snake.body.insert(0, self._snake.body[0])
-                self._point += 1
-            self._snake.take_step(next_coordinates())
+        if self._screen == "playing":
+            if self._snake.head() in self._snake.body[:-1]:
+                """ the snake's head hits body """
+                player_id = sql.get_player_id(self._player)
+                sql.insert_game_score(self._point, player_id)
+                self._screen = "game over"
+            else:
+                """if game is not over, did the snake eat apple? and make a move"""
+                if self._apple_coordinates == self._snake.head():
+                    self._apple_coordinates = Apple(
+                        MAX_X_AXIS, MAX_Y_AXIS, self._snake.body
+                    ).random()
+                    self._snake.body.insert(0, self._snake.body[0])
+                    self._point += 1
+                self._snake.take_step(next_coordinates())
 
     def on_render(self):
-        coordinates_to_pixel = lambda coordinates: (
-            CORNER.x + coordinates[0] * PIXEL_WIDTH,
-            CORNER.y + coordinates[1] * PIXEL_HEIGHT,
+        self._display_surf.fill(BLACK)
+        board = pygame.draw.rect(self._display_surf, WHITE, BOARD)
+        information = " ".join(
+            ["POINTS:", str(self._point), "   ", "PLAYER:", self._player]
         )
+        self._display_surf.blit(FONT.render(information, 1, GREEN), (RIGHT, 3))
 
         def snake_and_apple():
+            coordinates_to_pixel = lambda coordinates: (
+                CORNER.x + coordinates[0] * PIXEL_WIDTH,
+                CORNER.y + coordinates[1] * PIXEL_HEIGHT,
+            )
             for body_coordinates in self._snake.body[:-1]:
                 self._display_surf.blit(
                     SNAKE_BODY, coordinates_to_pixel(body_coordinates)
@@ -109,36 +118,47 @@ class App:
             )
 
         def popup_game_over():
-            pygame.draw.rect(self._display_surf, RED, POP_UP)
+            pop_up = pygame.draw.rect(self._display_surf, RED, POP_UP)
             self._display_surf.blit(
-                GAME_OVER_FONT.render(" GAME OVER! ", 1, WHITE),
-                (BOARD.centerx // 2, BOARD.centery // 2),
+                GAME_OVER_FONT.render("GAME OVER!", 1, WHITE),
+                (pop_up.x + 20, pop_up.y + 15),
             )
             self._display_surf.blit(
-                FONT.render("      Score: " + str(self._point), 1, WHITE),
-                (BOARD.centerx // 2, BOARD.centery // 2 + 50),
+                GAME_OVER_FONT.render("Points: " + str(self._point), 1, WHITE),
+                (pop_up.x + 40, pop_up.x + 65),
             )
 
         def menu():
-            pygame.draw.rect(self._display_surf, GREEN, POP_UP)
+            pop_up = pygame.draw.rect(self._display_surf, GREEN, POP_UP)
             self._display_surf.blit(
-                MENU_FONT.render("  NEW GAME  ", 1, WHITE),
-                (BOARD.centerx // 2, BOARD.centery // 2 + 10),
+                MENU_FONT.render("NEW GAME", 1, WHITE), (pop_up.x + 25, pop_up.y + 15)
             )
             self._display_surf.blit(
-                FONT.render("  Press any keys ", 1, WHITE),
-                (BOARD.centerx // 2, BOARD.centery // 2 + 50),
+                MENU_FONT.render("Press any keys", 1, WHITE),
+                (pop_up.x + 4, pop_up.y + 50),
             )
 
-        self._display_surf.fill(BLACK)
-        pygame.draw.rect(self._display_surf, WHITE, BOARD)
-        self._display_surf.blit(
-            FONT.render("SCORE: " + str(self._point), 1, GREEN), (0, 0)
-        )
+        def input_player_name():
+            input_field = pygame.draw.rect(self._display_surf, GRAY, INPUT_FIELD_NAME)
+            self._display_surf.blit(
+                FONT.render("Input your name", 1, GREEN),
+                (input_field.x + 18, input_field.y + 10),
+            )
+            self._display_surf.blit(
+                FONT.render(self._player, 1, GREEN),
+                (input_field.x + 18, input_field.y + 40),
+            )
 
-        (
-            popup_game_over() if self._game_over else snake_and_apple()
-        ) if self._game_start else menu()
+        if self._screen == "intro":
+            menu()
+        if self._screen == "input name":
+            input_player_name()
+        elif self._screen == "playing":
+            snake_and_apple()
+            sleep(0.075)
+        elif self._screen == "game over":
+            popup_game_over()
+            sleep(0.75)
 
         pygame.display.update()
 
@@ -150,21 +170,15 @@ class App:
             self._running = False
         while self._running:
             self._clock.tick(FPS)
-            self.on_render()  # render menu
-            if self._game_start:
-                while not self._game_over and self._running:
-                    for event in pygame.event.get():
-                        self.on_event(event)
-                    self.on_loop()
-                    self.on_render()  # snake_and_apple
-                    sleep(0.1)
-                self.on_render()  # popup_game_over
+            self.on_render()
+            self.on_loop()
             for event in pygame.event.get():
                 self.on_event(event)
         self.on_cleanup()
 
 
 if __name__ == "__main__":
+    sql.init_db()
     theApp = App()
     theApp.on_execute()
     print("Game over!")
